@@ -11,8 +11,6 @@ public class Game{
 
     public Game(int size){ //the constructor should call initialize() and play()
         this.size = size;
-        enemies = new Enemy[2];
-        treasures = new Treasure[2];
         initialize();
         play();
     }
@@ -35,8 +33,9 @@ public class Game{
 
     public void play(){ //write your game logic here
         Scanner scanner = new Scanner(System.in);
-
-        while(true){
+        boolean a = true;
+        
+        while(a){
             try {
                 Thread.sleep(100); // Wait for 1/10 seconds
             } catch (InterruptedException e) {
@@ -44,11 +43,13 @@ public class Game{
             }
             clearScreen(); // Clear the screen at the beggining of the while loop
             grid.display();
+            
             //coordinates, rowCol, treasure count and lives for debugging.
             System.out.println(player.getCoords());
             System.out.println(player.getRowCol(size));
             System.out.println("Treasure: " + player.getTreasureCount());
             System.out.println("Lives: " + player.getLives());
+            
             //userinput for direction.
             String input = scanner.nextLine().toLowerCase();
             if(input.equals("w")|| input.equals("s") || input.equals("a") || input.equals("d")){//if the key is correct, then player would move
@@ -65,37 +66,84 @@ public class Game{
                 }
                 grid.placeSprite(player, input);
             }
-            if(player.getLives() == 0){
-                grid.gameover();
-                break;
-            } else if(player.getWin()){
-                grid.win();
-                break;
+            
+            clearScreen();
+            
+            if(player.getLives() == 0 || player.getWin()){
+                if(player.getWin()){
+                    grid.win();
+                }else if(player.getLives() == 0){
+                    grid.gameover();
+                }
+                System.out.println("Do you want to play again? (Y/N)");
+                a = scanner.nextLine().toLowerCase().equals("y");
+                if(a){
+                    initialize();
+                }
             }
         }
-            
+        scanner.close();
     }
 
     public void initialize(){
         //to test, create a player, trophy, grid, treasure, and enemies. Then call placeSprite() to put them on the grid
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Choose difficulty: \n1. Easy\n2. Medium\n3. Hard");
+        int input = scan.nextInt();
+        scan.nextLine();
+        switch (input) {
+            case 1:
+                size = 5;
+                enemies = new Enemy[1];
+                treasures = new Treasure[1];
+                break;
+        
+            case 2:
+                size = 10;
+                enemies = new Enemy[2];
+                treasures = new Treasure[2];
+                break;
+            
+            case 3:
+                size = 15;
+                enemies = new Enemy[5];
+                treasures = new Treasure[3];
+                break;
+        }
         grid = new Grid(size);
         player = new Player(0, 0);
         grid.placeSprite(player);
-        Enemy enemy = new Enemy(5, 5);
-        Enemy enemy2 = new Enemy(7, 8);
-        grid.placeSprite(enemy2);grid.placeSprite(enemy);
-        enemies[0] = enemy;
-        enemies[1] =  enemy2;
-        Treasure treasure = new Treasure(2, 2);
-        Treasure treasure2 = new Treasure(1,7);
-        grid.placeSprite(treasure);grid.placeSprite(treasure2);
-        treasures[0] = treasure;
-        treasures[1] = treasure2;
-        trophy = new Trophy(9, 9);
+        
+        trophy = new Trophy(size - 1, size - 1);
         grid.placeSprite(trophy);
+
+        for(int i = 0; i < enemies.length; i++){
+            int randX = 0, randY = 0;
+            while(!(grid.getGrid()[size - 1 - randY][randX] instanceof Dot)){
+                randX = (int)(Math.random() * size - 1);
+                randY = (int)(Math.random() * size - 1);
+            }
+
+            Enemy newEnemy = new Enemy(randX, randY);
+            grid.placeSprite(newEnemy);
+            enemies[i] = newEnemy;
+        }        
+        for(int i = 0; i < treasures.length; i++){
+            int randX = 0, randY = 0;
+
+            while(!(grid.getGrid()[size - 1 - randY][randX] instanceof Dot)){
+                randX = (int)(Math.random() * size - 1);
+                randY = (int)(Math.random() * size - 1);
+            }
+            
+            Treasure newTreasure = new Treasure(randX, randY);
+            grid.placeSprite(newTreasure);
+            treasures[i] = newTreasure;
+        }        
     }
 
     public static void main(String[] args) {
         Game a = new Game(10);
+        a.getClass();
     }
 }
